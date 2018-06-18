@@ -7,11 +7,32 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"unicode"
 
 	maidenhead "github.com/pd0mz/go-maidenhead"
 )
+
+var bands = []int{
+	144,
+	222,
+	420,
+	902,
+	1240,
+	2300,
+	2390,
+	3300,
+	5650,
+	10000,
+	24000,
+	47000,
+	76000,
+	122250,
+	134000,
+	241000,
+	275000,
+}
 
 func main() {
 	resp, err := http.Get("http://www.newsvhf.com/beacons2.html")
@@ -19,6 +40,7 @@ func main() {
 		log.Fatal(err)
 	}
 	w := csv.NewWriter(os.Stdout)
+	w.Write([]string{"band", "freq", "call", "grid", "lat", "lon", "state", "city", "comments"})
 	scanner := bufio.NewScanner(resp.Body)
 	for scanner.Scan() {
 		t := scanner.Text()
@@ -35,6 +57,16 @@ func main() {
 			call += " " + grid
 			grid = f[0]
 			f = f[1:len(f)]
+		}
+		var band string
+		fnum, err := strconv.Atoi(freq[0:strings.Index(freq, ".")])
+		if err == nil {
+			for _, i := range bands {
+				if fnum < i {
+					break
+				}
+				band = fmt.Sprintf("%d", i)
+			}
 		}
 		p, err := maidenhead.ParseLocator(grid)
 		if err != nil {
@@ -60,7 +92,7 @@ func main() {
 			}
 		}
 		comments := strings.Join(f, " ")
-		w.Write([]string{freq, call, grid, fmt.Sprintf("%.6f", p.Latitude), fmt.Sprintf("%.6f", p.Longitude), state, city, comments})
+		w.Write([]string{band, freq, call, grid, fmt.Sprintf("%.6f", p.Latitude), fmt.Sprintf("%.6f", p.Longitude), state, city, comments})
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
