@@ -30,11 +30,16 @@ func main() {
 		}
 		f := strings.Fields(t)
 		freq, call, grid := f[0], f[1], f[2]
+		f = f[3:len(f)]
+		if len(grid) < 2 {
+			call += " " + grid
+			grid = f[0]
+			f = f[1:len(f)]
+		}
 		p, err := maidenhead.ParseLocator(grid)
 		if err != nil {
-			log.Print("parsing %q: %v", grid, err)
+			log.Printf("parsing %q: %v", grid, err)
 		}
-		f = f[3:len(f)]
 		var state string
 		if len(f[0]) == 2 {
 			state = f[0]
