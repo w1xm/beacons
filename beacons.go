@@ -40,7 +40,7 @@ func main() {
 		log.Fatal(err)
 	}
 	w := csv.NewWriter(os.Stdout)
-	w.Write([]string{"band", "freq", "call", "grid", "lat", "lon", "state", "city", "comments"})
+	w.Write([]string{"band", "Frequency", "call", "grid", "Latitude", "Longitude", "state", "city", "Comment", "Name"})
 	scanner := bufio.NewScanner(resp.Body)
 	for scanner.Scan() {
 		t := scanner.Text()
@@ -92,7 +92,8 @@ func main() {
 			}
 		}
 		comments := strings.Join(f, " ")
-		w.Write([]string{band, freq, call, grid, fmt.Sprintf("%.6f", p.Latitude), fmt.Sprintf("%.6f", p.Longitude), state, city, comments})
+		name := fmt.Sprintf("%s - %s (%s, %s)", call, grid, city, state)
+		w.Write([]string{band, freq, call, grid, fmt.Sprintf("%.6f", p.Latitude), fmt.Sprintf("%.6f", p.Longitude), state, city, comments, name})
 	}
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
