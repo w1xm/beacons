@@ -12,6 +12,7 @@ import (
 	"unicode"
 
 	maidenhead "github.com/pd0mz/go-maidenhead"
+	"golang.org/x/text/encoding/charmap"
 )
 
 var bands = []int{
@@ -41,7 +42,8 @@ func main() {
 	}
 	w := csv.NewWriter(os.Stdout)
 	w.Write([]string{"band", "Frequency", "call", "grid", "Latitude", "Longitude", "state", "city", "Comment", "Name"})
-	scanner := bufio.NewScanner(resp.Body)
+	body := charmap.ISO8859_1.NewDecoder().Reader(resp.Body)
+	scanner := bufio.NewScanner(body)
 	for scanner.Scan() {
 		t := scanner.Text()
 		if len(t) == 0 {
@@ -92,7 +94,7 @@ func main() {
 			}
 		}
 		comments := strings.Join(f, " ")
-		name := fmt.Sprintf("%s - %s (%s, %s)", call, grid, city, state)
+		name := fmt.Sprintf("%s %s - %s (%s, %s)", call, freq, grid, city, state)
 		w.Write([]string{band, freq, call, grid, fmt.Sprintf("%.6f", p.Latitude), fmt.Sprintf("%.6f", p.Longitude), state, city, comments, name})
 	}
 	if err := scanner.Err(); err != nil {
